@@ -22,7 +22,7 @@ public:
     return millis() - lastChecked > timeOut;
   }
 
-  uint32 getCurrentState() const {
+  [[nodiscard]] uint32 getCurrentState() const {
     return currentState;
   };
 
