@@ -2,8 +2,8 @@
 // Created by dave on 10.02.23.
 //
 
-#ifndef ESP8266_WIFI_SNIFFER_SETTINGS_H
-#define ESP8266_WIFI_SNIFFER_SETTINGS_H
+#ifndef ESP8266_MOTION_AND_LIGHT_SENSORS_SETTINGS_H
+#define ESP8266_MOTION_AND_LIGHT_SENSORS_SETTINGS_H
 
 #define IOTWEBCONF_DEBUG_PWD_TO_SERIAL
 
@@ -205,4 +205,4 @@ void setupConfigurationServer(int statusPin = LED_BUILTIN) {
   webServer.onNotFound([] { iotWebConf.handleNotFound(); });
 }
 
-#endif //ESP8266_WIFI_SNIFFER_SETTINGS_H
+#endif //ESP8266_MOTION_AND_LIGHT_SENSORS_SETTINGS_H

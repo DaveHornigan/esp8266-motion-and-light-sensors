@@ -2,8 +2,8 @@
 // Created by dave on 21.02.23.
 //
 
-#ifndef ESP8266_TOILET_SENSORS_LED_H
-#define ESP8266_TOILET_SENSORS_LED_H
+#ifndef ESP8266_MOTION_AND_LIGHT_SENSORS_LED_H
+#define ESP8266_MOTION_AND_LIGHT_SENSORS_LED_H
 
 class LED {
   uint8 pinNumber;
@@ -51,4 +51,4 @@ public:
   }
 };
 
-#endif //ESP8266_TOILET_SENSORS_LED_H
+#endif //ESP8266_MOTION_AND_LIGHT_SENSORS_LED_H
