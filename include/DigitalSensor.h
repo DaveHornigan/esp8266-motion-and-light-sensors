@@ -10,6 +10,7 @@ class DigitalSensor {
   uint8 currentState = 0;
   uint64 lastChecked = 0;
   uint32 timeOut = 0;
+  LED *statusLed = nullptr;
 
 public:
   DigitalSensor(uint8 pin, uint32 timeout = 0, uint8 initState = 0) {
@@ -28,11 +29,18 @@ public:
 
   void check() {
     currentState = digitalRead(pinNumber);
+    if (statusLed != nullptr) {
+      isEnabled() ? statusLed->enable() : statusLed->disable();
+    }
     lastChecked = millis();
   }
 
   [[nodiscard]] uint8 getPinNumber() const {
     return pinNumber;
+  }
+
+  void setStatusLed(LED *led) {
+    statusLed = led;
   }
 };
 

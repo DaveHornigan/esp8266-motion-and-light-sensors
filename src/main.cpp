@@ -11,8 +11,6 @@
 #define PIN_LIGHT A0
 #define PIN_STATUS LED_BUILTIN
 
-unsigned long lastLightCheck = 0;
-
 LED blue(PIN_LED_BLUE, LOW);
 LED green(PIN_LED_GREEN, LOW);
 LED yellow(PIN_LED_YELLOW, LOW);
@@ -26,6 +24,7 @@ void setup() {
   pinMode(yellow.getPinNumber(), OUTPUT);
   pinMode(motion.getPinNumber(), INPUT);
   pinMode(light.getPinNumber(), INPUT);
+  motion.setStatusLed(&blue);
   setupConfigurationServer(PIN_STATUS);
 }
 
@@ -56,17 +55,12 @@ void loop() {
   yield();
   if (motion.isTimeOutReached()) {
     motion.check();
-    if (motion.isEnabled()) {
-      blue.enable();
-    } else {
-      blue.disable();
-    }
   }
   yield();
   if (light.isTimeOutReached()) {
     light.check();
     Serial.printf("Light: %d\n", light.getCurrentState());
-    if (light.getCurrentState() < 600) {
+    if (light.getCurrentState() > 500) {
       green.enable();
     } else {
       green.disable();
