@@ -69,14 +69,17 @@ void loop() {
   }
   yield();
   if (light.isTimeOutReached()) {
+    unsigned int lastState = light.getCurrentState();
     light.check();
-    Serial.printf("Light: %d\n", light.getCurrentState());
+    if (lastState != light.getCurrentState()) {
+      Serial.printf("Light: %d\n", light.getCurrentState());
 
-    mqttClient.publish(mqttTopic.getLightStateTopic().c_str(), String(light.getCurrentState()).c_str());
-    if (light.getCurrentState() > 500) {
-      green.enable();
-    } else {
-      green.disable();
+      mqttClient.publish(mqttTopic.getLightStateTopic().c_str(), String(light.getCurrentState()).c_str());
+      if (light.getCurrentState() > 500) {
+        green.enable();
+      } else {
+        green.disable();
+      }
     }
   }
 }
