@@ -26,6 +26,7 @@ void setup() {
   pinMode(light.getPinNumber(), INPUT);
   motion.setStatusLed(&blue);
   setupConfigurationServer(PIN_STATUS);
+  mqttTopic = MqttTopic(mqttRootTopic);
 }
 
 void loop() {
@@ -54,12 +55,24 @@ void loop() {
   }
   yield();
   if (motion.isTimeOutReached()) {
+    bool lastState = motion.isEnabled();
     motion.check();
+
+    if (lastState != motion.isEnabled()) {
+      std::string motionStateString = "Off";
+      if (motion.isEnabled()) {
+        motionStateString = "On";
+      }
+
+      mqttClient.publish(mqttTopic.getMotionStateTopic().c_str(), motionStateString.c_str());
+    }
   }
   yield();
   if (light.isTimeOutReached()) {
     light.check();
     Serial.printf("Light: %d\n", light.getCurrentState());
+
+    mqttClient.publish(mqttTopic.getLightStateTopic().c_str(), String(light.getCurrentState()).c_str());
     if (light.getCurrentState() > 500) {
       green.enable();
     } else {

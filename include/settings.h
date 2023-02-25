@@ -32,13 +32,18 @@
 
 #define SETTING_PARAM_LENGTH 60
 
+#define DEFAULT_ROOT_MQTT_TOPIC "hornigan/devices/my-sensor"
+
+#include "MqttTopic.h"
 bool needMqttConnect = false;
 bool needReboot = false;
 unsigned long lastMqttConnectionAttempt = 0;
 
+MqttTopic mqttTopic(DEFAULT_ROOT_MQTT_TOPIC);
+
 // <Settings>
 char mqttServer[SETTING_PARAM_LENGTH];
-const char* mqttTopic = "hornigan/devices/sniffer";
+char mqttRootTopic[SETTING_PARAM_LENGTH] = DEFAULT_ROOT_MQTT_TOPIC;
 char mqttUser[SETTING_PARAM_LENGTH];
 char mqttPass[SETTING_PARAM_LENGTH];
 // </Settings>
@@ -46,7 +51,7 @@ char mqttPass[SETTING_PARAM_LENGTH];
 
 DNSServer dnsServer;
 WebServer webServer(80);
-IotWebConf iotWebConf(AP_WIFI_NAME.c_str(), &dnsServer, &webServer, AP_WIFI_PASS, "1");
+IotWebConf iotWebConf(AP_WIFI_NAME.c_str(), &dnsServer, &webServer, AP_WIFI_PASS, "2");
 WiFiClient wiFiClient;
 PubSubClient mqttClient(wiFiClient);
 
@@ -72,6 +77,13 @@ IotWebConfPasswordParameter mqttPasswordParam = IotWebConfPasswordParameter(
     SETTING_PARAM_LENGTH,
     ""
 );
+IotWebConfTextParameter mqttRootTopicParam = IotWebConfTextParameter(
+    "MQTT Root topic",
+    "mqttRootTopic",
+    mqttRootTopic,
+    SETTING_PARAM_LENGTH,
+    DEFAULT_ROOT_MQTT_TOPIC
+);
 
 bool formValidator(iotwebconf::WebRequestWrapper *webRequestWrapper) {
   uint serverLength = webRequestWrapper->arg(mqttServerParam.getId()).length();
@@ -85,11 +97,16 @@ bool formValidator(iotwebconf::WebRequestWrapper *webRequestWrapper) {
     iotWebConf.getWifiSsidParameter()->errorMessage = "Please provide SSID";
     hasErrors = true;
   }
+  uint topicLength = mqttRootTopicParam.getLength();
+  if (topicLength == 0) {
+    mqttRootTopicParam.errorMessage = "Please provide MQTT root topic";
+    hasErrors = true;
+  }
   return !hasErrors;
 }
 
 void mqttSubscribe() {
-//  mqttClient.subscribe("");
+  mqttClient.subscribe(mqttTopic.getCommandTopic().c_str());
 }
 
 void mqttMessageReceived(const char *topic, byte *payload, unsigned int length) {
@@ -138,6 +155,7 @@ bool mqttReconnect() {
     )) {
       Serial.println(F("MQTT Connected"));
       needMqttConnect = false;
+      mqttClient.publish(mqttTopic.getAvailabilityTopic().c_str(), "online");
       mqttSubscribe();
     } else {
       lastMqttConnectionAttempt = now;
@@ -183,6 +201,7 @@ void setupConfigurationServer(int statusPin = LED_BUILTIN) {
   mqttGroup.addItem(&mqttServerParam);
   mqttGroup.addItem(&mqttUserNameParam);
   mqttGroup.addItem(&mqttPasswordParam);
+  mqttGroup.addItem(&mqttRootTopicParam);
   iotWebConf.addParameterGroup(&mqttGroup);
   iotWebConf.setWifiConnectionCallback(&wifiConnected);
   iotWebConf.setWifiConnectionTimeoutMs(15000);
